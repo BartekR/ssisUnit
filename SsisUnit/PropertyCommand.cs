@@ -233,6 +233,19 @@ namespace SsisUnit
                 return LocatePropertyValue(project, dtsObject, restOfString, operation, value);
             }
 
+            // \Package.PrecedenceConstraints[Constraint1].EvalOp
+            // \Package\Sequence container.PrecedenceConstraints[Constraint2].LogicalAnd
+            if (firstPart.ToUpper().StartsWith("PRECEDENCECONSTRAINTS"))
+            {
+                string name = GetSubStringBetween(firstPart, "[", "]");
+                PrecedenceConstraints pcs = ((IDTSSequence)dtsObject).PrecedenceConstraints;
+                PrecedenceConstraint pc = pcs[name];
+
+                var x = pc.GetType().GetProperty(restOfString).GetValue(pc, null);
+
+                return x;
+            }
+
             if (firstPart.ToUpper().StartsWith("VARIABLES"))
             {
                 if (!(dtsObject is DtsContainer))

@@ -137,6 +137,35 @@ namespace UTssisUnit.Commands
         }
 #endif
 
+        [TestMethod]
+        public void PrecedenceConstraintsTest()
+        {
+
+            string packageFilepath;
+#if SQL2014 || SQL2012
+            packageFilepath = UnpackToFile("UTssisUnit.TestPackages.PrecedenceConstraintTest.dtsx");
+#elif SQL2017
+            packageFilepath = UnpackToFile("UTssisUnit.TestPackages.PrecedenceConstraintTest2017.dtsx");
+#endif
+
+            var ts = new SsisTestSuite();
+            ts.PackageList.Add("PackageA", new PackageRef("PackageA", packageFilepath, PackageStorageType.FileSystem));
+            
+            Test ssisTest = new Test(ts, "Test", "PackageA", null, "{5E04A56B-8199-4005-ACE8-5BA98A77FDD8}");
+
+            ts.Tests.Add("Test", ssisTest);
+
+            ts.Tests["Test"].Asserts.Add("TestA1", AddNewAssert(ts, ssisTest, "TestA1", "Constraint", "\\Package.PrecedenceConstraints[Constraint].EvalOp"));
+            ts.Tests["Test"].Asserts.Add("TestA2", AddNewAssert(ts, ssisTest, "TestA2", true, "\\Package.PrecedenceConstraints[Constraint].LogicalAnd"));
+            ts.Tests["Test"].Asserts.Add("TestA3", AddNewAssert(ts, ssisTest, "TestA3", false, "\\Package\\SEQC More Dataflows.PrecedenceConstraints[Constraint].LogicalAnd"));
+            
+            var context = ts.CreateContext();
+            ts.Execute(context);
+            context.Log.ApplyTo(log => Debug.Print(log.ItemName + " :: " + string.Join(Environment.NewLine + "\t", log.Messages)));
+            Assert.AreEqual(4, ts.Statistics.GetStatistic(StatisticEnum.AssertPassedCount));
+            Assert.AreEqual(0, ts.Statistics.GetStatistic(StatisticEnum.AssertFailedCount));
+        }
+
         private SsisAssert AddNewAssert(SsisTestSuite ts, Test test, string assertName, object result, string propertyPath)
         {
             return new SsisAssert(ts, test, assertName, result, false) { Command = new PropertyCommand(ts, "Get", propertyPath, string.Empty) };

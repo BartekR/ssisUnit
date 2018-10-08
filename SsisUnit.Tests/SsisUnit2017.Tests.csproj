@@ -129,6 +129,12 @@
     <EmbeddedResource Include="TestPackages\ISPACTesting.ispac" />
     <EmbeddedResource Include="TestPackages\BadPackage.dtsx" />
     <EmbeddedResource Include="TestPackages\PropertyTest2017.dtsx" />
+    <EmbeddedResource Include="TestPackages\PrecedenceConstraintTest2017.dtsx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="TestPackages\PrecedenceConstraintTest2012.dtsx">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="UT_BadTestFile.ssisUnit" />
     <EmbeddedResource Include="SampleSsisUnitTests\UTssisUnit_Package.xml" />
     <EmbeddedResource Include="SampleSsisUnitTests\UTSsisUnit_BadData.ssisUnit" />

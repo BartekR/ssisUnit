@@ -158,11 +158,13 @@ namespace UTssisUnit.Commands
             ts.Tests["Test"].Asserts.Add("TestA1", AddNewAssert(ts, ssisTest, "TestA1", "Constraint", "\\Package.PrecedenceConstraints[Constraint].EvalOp"));
             ts.Tests["Test"].Asserts.Add("TestA2", AddNewAssert(ts, ssisTest, "TestA2", true, "\\Package.PrecedenceConstraints[Constraint].LogicalAnd"));
             ts.Tests["Test"].Asserts.Add("TestA3", AddNewAssert(ts, ssisTest, "TestA3", false, "\\Package\\SEQC More Dataflows.PrecedenceConstraints[Constraint].LogicalAnd"));
-            
+
+            ts.Tests["Test"].Asserts.Add("TestA4", AddNewAssert(ts, ssisTest, "TestA4", "ExpressionAndConstraint", "\\Package.PrecedenceConstraints[Constraint 1].EvalOp"));
+
             var context = ts.CreateContext();
             ts.Execute(context);
             context.Log.ApplyTo(log => Debug.Print(log.ItemName + " :: " + string.Join(Environment.NewLine + "\t", log.Messages)));
-            Assert.AreEqual(4, ts.Statistics.GetStatistic(StatisticEnum.AssertPassedCount));
+            Assert.AreEqual(5, ts.Statistics.GetStatistic(StatisticEnum.AssertPassedCount));
             Assert.AreEqual(0, ts.Statistics.GetStatistic(StatisticEnum.AssertFailedCount));
         }
 

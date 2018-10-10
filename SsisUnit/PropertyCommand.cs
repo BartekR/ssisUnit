@@ -241,6 +241,20 @@ namespace SsisUnit
                 PrecedenceConstraints pcs = ((IDTSSequence)dtsObject).PrecedenceConstraints;
                 PrecedenceConstraint pc = pcs[name];
 
+                if (operation == PropertyOperation.Set)
+                {
+                    Type t = pc.GetType().GetProperty(restOfString).PropertyType;
+
+                    if(t.IsEnum)
+                    {
+                        pc.GetType().GetProperty(restOfString).SetValue(pc, Enum.Parse(t, (string)value));
+                    }
+                    else
+                    {
+                        pc.GetType().GetProperty(restOfString).SetValue(pc, Convert.ChangeType(value, t));
+                    }
+                }
+
                 var x = pc.GetType().GetProperty(restOfString).GetValue(pc, null);
 
                 return x;

@@ -138,7 +138,7 @@ namespace UTssisUnit.Commands
 #endif
 
         [TestMethod]
-        public void PrecedenceConstraintsTest()
+        public void PrecedenceConstraintsGetTest()
         {
 
             string packageFilepath;
@@ -158,13 +158,49 @@ namespace UTssisUnit.Commands
             ts.Tests["Test"].Asserts.Add("TestA1", AddNewAssert(ts, ssisTest, "TestA1", "Constraint", "\\Package.PrecedenceConstraints[Constraint].EvalOp"));
             ts.Tests["Test"].Asserts.Add("TestA2", AddNewAssert(ts, ssisTest, "TestA2", true, "\\Package.PrecedenceConstraints[Constraint].LogicalAnd"));
             ts.Tests["Test"].Asserts.Add("TestA3", AddNewAssert(ts, ssisTest, "TestA3", false, "\\Package\\SEQC More Dataflows.PrecedenceConstraints[Constraint].LogicalAnd"));
-
             ts.Tests["Test"].Asserts.Add("TestA4", AddNewAssert(ts, ssisTest, "TestA4", "ExpressionAndConstraint", "\\Package.PrecedenceConstraints[Constraint 1].EvalOp"));
 
             var context = ts.CreateContext();
             ts.Execute(context);
             context.Log.ApplyTo(log => Debug.Print(log.ItemName + " :: " + string.Join(Environment.NewLine + "\t", log.Messages)));
             Assert.AreEqual(5, ts.Statistics.GetStatistic(StatisticEnum.AssertPassedCount));
+            Assert.AreEqual(0, ts.Statistics.GetStatistic(StatisticEnum.AssertFailedCount));
+        }
+
+        [TestMethod]
+        public void PrecedenceConstraintsSetTest()
+        {
+
+            string packageFilepath;
+#if SQL2014 || SQL2012
+            packageFilepath = UnpackToFile("UTssisUnit.TestPackages.PrecedenceConstraintTest.dtsx");
+#elif SQL2017
+            packageFilepath = UnpackToFile("UTssisUnit.TestPackages.PrecedenceConstraintTest2017.dtsx");
+#endif
+
+            var ts = new SsisTestSuite();
+            ts.PackageList.Add("PackageA", new PackageRef("PackageA", packageFilepath, PackageStorageType.FileSystem));
+
+            Test ssisTest = new Test(ts, "Test", "PackageA", null, "{5E04A56B-8199-4005-ACE8-5BA98A77FDD8}");
+
+            ts.Tests.Add("Test", ssisTest);
+
+            // originally "Constraint"
+            PropertyCommand p1 = new PropertyCommand(ts, "Set", "\\Package.PrecedenceConstraints[Constraint].EvalOp", "ExpressionAndConstraint");
+
+            // originally "true"
+            PropertyCommand p2 = new PropertyCommand(ts, "Set", "\\Package.PrecedenceConstraints[Constraint].LogicalAnd", false);
+
+            ts.Tests["Test"].TestSetup.Commands.Add(p1);
+            ts.Tests["Test"].TestSetup.Commands.Add(p2);
+
+            ts.Tests["Test"].Asserts.Add("TestA1", AddNewAssert(ts, ssisTest, "TestA1", "ExpressionAndConstraint", "\\Package.PrecedenceConstraints[Constraint].EvalOp"));
+            ts.Tests["Test"].Asserts.Add("TestA2", AddNewAssert(ts, ssisTest, "TestA2", false, "\\Package.PrecedenceConstraints[Constraint].LogicalAnd"));
+
+            var context = ts.CreateContext();
+            ts.Execute(context);
+            context.Log.ApplyTo(log => Debug.Print(log.ItemName + " :: " + string.Join(Environment.NewLine + "\t", log.Messages)));
+            Assert.AreEqual(3, ts.Statistics.GetStatistic(StatisticEnum.AssertPassedCount));
             Assert.AreEqual(0, ts.Statistics.GetStatistic(StatisticEnum.AssertFailedCount));
         }
 
